@@ -1,0 +1,58 @@
+name: ai-support-ticket-system
+services:
+  workflow:
+    build: ../workflow-service
+    ports: ["8000:8000"]
+    environment:
+      ROUTER_URL: http://router:8000
+      RETRIEVAL_URL: http://retrieval:8000
+      OLLAMA_URL: http://ollama:11434
+      TRACE_LOG_PATH: /app/traces/traces.jsonl
+    volumes:
+      - workflow_traces:/app/traces
+    depends_on:
+      router:
+        condition: service_healthy
+      retrieval:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+  router:
+    build: ../routing-service
+    ports: ["8001:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+  retrieval:
+    build: ../retrieval-service
+    ports: ["8002:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+  ollama:
+    image: ollama/ollama:0.34.1
+    ports: ["8003:11434"]
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "show", "qwen2.5:1.5b-instruct-q4_K_M"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+volumes:
+  ollama_models:
+    name: ${OLLAMA_VOLUME_NAME:-ai-support-ticket-ollama}
+  workflow_traces:

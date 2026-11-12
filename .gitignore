@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Environment variables and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# macOS
+.DS_Store
+
+# Runtime logs and traces
+*.log
+logs/
+traces/
+workflow_traces/
+
+# Generated deployment results
+Task6/ticket_28763_result.json
+Task6/*_result.json
+
+# Local vector databases and caches
+*.lance/
+.lancedb/
+.cache/
+models/
+
+# Generated end-to-end test output
+tests/*_result.json
